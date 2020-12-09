@@ -1,0 +1,110 @@
+---
+title: "Sprawozdanie_projektowe_1"
+author: "Bartosz Dąbrowski"
+date: "9 12 2020"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(corrplot)
+#install.packages('rtools')
+#install.packages('pdflatex')
+```
+
+```{r, echo=FALSE}
+dane<-read.csv("E:\\R\\daneZ1.csv", sep=";")
+```
+
+**Zadanie 1**
+
+```{r, echo=FALSE}
+summary(dane)
+```
+Używajac funkcji __summary()__, uzyskujemy podglad glownychstatystyk opisowych analizowanych danych.
+
+**Zadanie 2**
+
+```{r}
+wz<-c()
+for (i in 2:5){
+  wz[i-1]=sd(dane[,i])/mean(dane[,i])
+}
+wz
+```
+
+Na podstawie uzyskanych wspóczynników zmiennosci, mozna uznac, ze zadna ze zmiennych nie jest quasi-stala. Najblizsza przyjetej granicy 0,1 QNC 
+
+**Zadanie 3**
+
+```{r echo=FALSE}
+cor(dane[2:5])
+#corrplot(dane[2:5])
+
+```
+
+Z przedstawionych zmiennych, bardzo niska korelacje ze zmienna objasniajaca wykazuje __PRICE__ - wspolczynnik ponizej 0,02 . 
+
+**Zadanie 4**
+
+```{r echo=FALSE}
+model1<-lm(QNC~PRICE+PRIME+UNEMP,data=dane)
+model1
+summary(model1)
+```
+
+Przewidywania okazaly sie sluszne - zmienna __PRICE__ jest nieistotna w wyestymowanym modelu.
+
+**Zadanie 5**
+
+```{r echo=FALSE}
+summary(model1)$r.squared
+
+```
+
+**Zadanie 6**
+
+#kod z mbojan/mbtools
+```{r}
+hellwig <- function( y, x, method="pearson")
+{
+  requireNamespace("utils")
+  x <- as.data.frame(x)
+  cm <- stats::cor(x, method=method) # correlation matrix among indeps
+  cd <- stats::cor(x, y, method=method) # correlations with dependent
+  # list of combination vectors
+  k <- sapply( seq(2, length(x)), function(i)
+              utils::combn(length(x), i, simplify=FALSE) )
+  k <- do.call("c", k)
+  # function calculating individual capacities
+  hfun <- function(v)
+  {
+    sapply(v, function(i) cd[i]^2 / sum(abs(cm[v,i])) )
+  }
+  h <- sapply(k, hfun)
+  data.frame( k = sapply( k, paste, collapse="-"),
+             h = sapply(h, sum),
+             stringsAsFactors=FALSE)
+}
+```
+
+
+```{r}
+hellwig<-hellwig(dane[,2],dane[,3:5])
+hellwig
+```
+
+**Zadanie 7**
+
+```{r echo=FALSE}
+model2<-lm(QNC~PRIME+UNEMP,dane)
+model2
+summary(model2)
+```
+
+
+
+
+
